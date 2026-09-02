@@ -1,0 +1,17 @@
+---
+description: Python testing conventions for this prototype template
+globs:
+  - "**/*.py"
+  - "tests/**"
+  - "scripts/**"
+alwaysApply: false
+---
+
+# Python testing rules
+
+- Python version is **3.12 only**, managed by `uv`.
+- Always run Python and tests via `./scripts/run-python.sh`, never bare `python3` or `pytest`.
+- Run tests before committing: `./scripts/run-python.sh --test`
+- Tests live in `tests/`; source code in `src/` (`pythonpath = src` in `pyproject.toml`).
+- Use `pytest` style tests; keep tests focused on real behavior.
+- Do not add JavaScript, web servers, or forwarded ports.
