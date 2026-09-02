@@ -1,41 +1,49 @@
-# Agent instructions
+# Agent instructions (Cloud Agent / Cursor)
 
-This repository is a **Python 3.12 prototype**. Follow these rules in every session.
+This repo has **two environments**. Do not confuse them.
 
-## Run Python through the wrapper script
+| Environment | When it applies | How to run code |
+|-------------|-----------------|-----------------|
+| **Cloud Agent VM** | When the user asks *you* (the agent) to run or test code | Use `scripts/run-python.sh` — see below |
+| **Codespace / devcontainer** | When the *user* opens the repo in GitHub Codespaces or VS Code Dev Containers | Automated by `.devcontainer/` (ignored by the agent) |
 
-Always use `./scripts/run-python.sh` — never call `python3`, `python`, or `pytest` directly.
+## Running Python (agent — required)
+
+When the user asks you to run, test, or debug Python code, **always** use the wrapper script. Do **not** call `python`, `python3`, or `pip` directly.
 
 ```bash
 # Run a script
-./scripts/run-python.sh src/hello.py
+./scripts/run-python.sh path/to/script.py
+
+# Run with arguments
+./scripts/run-python.sh path/to/script.py -- --flag value
 
 # Run tests
 ./scripts/run-python.sh --test
 
-# Pass arguments to Python
-./scripts/run-python.sh -c "from hello import greet; print(greet('World'))"
+# Run a module
+./scripts/run-python.sh -m pytest tests/ -v
+
+# Sync deps only (after pyproject.toml changes)
+./scripts/run-python.sh --sync
 ```
 
-`run-python.sh` calls `setup-python.sh` first, which installs `uv`, pins Python 3.12, and runs `uv sync --all-extras`.
+The script handles: Python version pin, `uv` install, venv creation, and dependency sync from `pyproject.toml`.
 
-## Ignore `.devcontainer/`
+## Source of truth for Python
 
-The `.devcontainer/` directory is for **GitHub Codespaces** only. Do not read, modify, or rely on it during Cursor Agent work.
+| File | Purpose |
+|------|---------|
+| `.python-version` | Exact Python version (currently 3.12) |
+| `pyproject.toml` | Dependencies and project metadata |
+| `scripts/run-python.sh` | How the agent executes Python |
+| `scripts/setup-python.sh` | Setup-only (called by run-python.sh) |
 
-## Constraints
+To add a package: edit `pyproject.toml` dependencies, then run `./scripts/run-python.sh --sync`.
 
-- Python **3.12** only (`>=3.12,<3.13`), managed by `uv`
-- No JavaScript, no web server, no forwarded ports
-- Keep changes minimal and focused on the task at hand
-- Run `./scripts/run-python.sh --test` before committing
+## What not to do
 
-## Project structure
-
-| Path | Purpose |
-|---|---|
-| `src/` | Application source code |
-| `tests/` | pytest tests (`testpaths = tests`, `pythonpath = src`) |
-| `scripts/setup-python.sh` | One-time / idempotent environment setup |
-| `scripts/run-python.sh` | Entry point for all Python execution |
-| `pyproject.toml` | Dependencies and tool configuration |
+- Do not assume `.devcontainer/post-create.sh` has run on the agent VM.
+- Do not use system `python3` directly — versions and packages may differ from the project pin.
+- Do not create ad-hoc venvs unless the user explicitly asks; use the script.
+- Do not commit API keys or secrets — use GitHub Codespaces Secrets or Cursor environment secrets.
