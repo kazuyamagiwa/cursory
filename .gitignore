@@ -1,62 +1,10 @@
-# Python
-
+node_modules/
+dist/
+.venv/
+.devcontainer/logs/
+.devcontainer/.setup-complete
+*.log
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual environments
-.venv/
-venv/
-ENV/
-env/
-
-# uv
-.uv/
-
-# pytest
 .pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-
-# mypy / type checkers
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.pytype/
-
-# IDEs
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Local env files
-.env
-.env.*
-!.env.example
+.uv/
