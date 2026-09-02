@@ -10,14 +10,25 @@
     "vscode": {
       "extensions": [
         "ms-python.python",
-        "ms-python.debugpy"
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "charliermarsh.ruff",
+        "GitHub.vscode-pull-request-github"
       ],
       "settings": {
+        "editor.formatOnSave": true,
         "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
         "python.testing.pytestEnabled": true,
-        "python.testing.pytestArgs": ["tests"]
+        "python.testing.pytestArgs": ["tests"],
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
+    },
+    "codespaces": {
+      "openFiles": ["README.md", "src/hello.py"]
     }
+  },
+  "remoteEnv": {
+    "PYTHONUNBUFFERED": "1"
   },
   "remoteUser": "vscode",
   "onCreateCommand": "bash .devcontainer/on-create.sh",
