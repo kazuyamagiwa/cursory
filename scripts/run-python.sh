@@ -13,4 +13,9 @@ if [[ "${1:-}" == "--test" ]]; then
   exec uv run pytest "$@"
 fi
 
+if [[ "${1:-}" == "--sync" ]]; then
+  shift
+  exec uv sync --all-extras "$@"
+fi
+
 exec uv run python "$@"
