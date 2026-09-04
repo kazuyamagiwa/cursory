@@ -15,6 +15,7 @@ You drop this repo into your project as `cursory/`, run a short installer, and g
 ## Contents
 
 - [Why this exists](#why-this-exists)
+- [Ask Cursor to run the installer](#ask-cursor-to-run-the-installer)
 - [Ask Cursor to run Python](#ask-cursor-to-run-python)
 - [What you get](#what-you-get)
 - [Prerequisites](#prerequisites)
@@ -43,6 +44,41 @@ Most “agent templates” either:
 2. You copy **only this kit** under `cursory/`.
 3. An installer **asks** what is missing and copies **only** those essentials.
 4. Template filenames start with `_` so they are never confused with live project files.
+
+## Ask Cursor to run the installer
+
+Yes — in the Cursor app you can install this kit with **natural language**. You do not have to run `install.sh` yourself in a terminal.
+
+After this repo lives at `your-project/cursory/`, open the project in Cursor and ask something like:
+
+> Run the cursory installer non-interactively.
+
+> Install cursory into this project.
+
+> Run `./cursory/install.sh` with defaults (no prompts).
+
+### Prefer non-interactive when asking Cursor
+
+`install.sh` uses interactive `read` prompts. Agents handle those poorly. For Cursor, use the non-interactive path:
+
+```bash
+CURSORY_YES=1 ./cursory/install.sh
+```
+
+That accepts defaults: create `./cursory.sh` if missing, copy every missing template, skip anything that already exists, and clean underscore templates from `cursory/`.
+
+| You say in Cursor | What the agent should run |
+|-------------------|---------------------------|
+| “Install cursory” / “Run the cursory installer” | `CURSORY_YES=1 ./cursory/install.sh` |
+| “Re-run cursory setup” | `CURSORY_YES=1 ./cursory.sh` or `CURSORY_YES=1 ./cursory/install.sh` |
+
+Still true under Cursor:
+
+- Destinations that already exist are **not** overwritten
+- `pyproject.toml` is **never** created or overwritten
+- The kit folder must be named `cursory` (or set `CURSORY_TARGET`)
+
+You can also run `./cursory/install.sh` yourself in a terminal if you want to answer each prompt manually.
 
 ## Ask Cursor to run Python
 
@@ -131,19 +167,34 @@ Or copy the folder in and name it exactly `cursory`.
 
 ### 2. Run the installer from the repo root
 
+**Option A — ask Cursor (recommended):**
+
+> Install cursory non-interactively.
+
+→ `CURSORY_YES=1 ./cursory/install.sh`  
+See [Ask Cursor to run the installer](#ask-cursor-to-run-the-installer).
+
+**Option B — terminal, interactive Q&A:**
+
 ```bash
 ./cursory/install.sh
 ```
 
+**Option C — terminal, same defaults as Cursor:**
+
+```bash
+CURSORY_YES=1 ./cursory/install.sh
+```
+
 The kit directory **must** be named `cursory` (unless you set `CURSORY_TARGET`).
 
-### 3. Answer the prompts
+### 3. What happens during install
 
 The installer:
 
 1. Scans your repo (what exists / what is missing)
 2. Offers to create `./cursory.sh` at the root
-3. Asks, for each missing template, whether to copy it
+3. Asks (or auto-accepts with `CURSORY_YES=1`), for each missing template, whether to copy it
 4. Skips any destination that already exists (no overwrite)
 5. Optionally cleans leftover template files inside `cursory/`
 
@@ -222,7 +273,7 @@ Never commit real API keys.
 
 ## Non-interactive install
 
-Useful for CI or scripted setup (accepts defaults: copy missing files, create launcher, clean kit):
+Use this for **Cursor natural-language installs**, CI, and scripted setup. It accepts defaults: copy missing files, create launcher, clean kit:
 
 ```bash
 CURSORY_YES=1 ./cursory/install.sh
@@ -281,6 +332,7 @@ your-project/
 | Problem | What to do |
 |---------|------------|
 | `This kit must live at <your-repo>/cursory/` | Rename the folder to `cursory`, or set `CURSORY_TARGET` |
+| Cursor hangs or fails on installer prompts | Ask for a **non-interactive** install: `CURSORY_YES=1 ./cursory/install.sh` |
 | Agent uses system `python3` | Ensure `AGENTS.md` was installed; ask it to follow `AGENTS.md` / use `./scripts/run-python.sh` |
 | `uv sync` fails | Fix **your** `pyproject.toml` / build backend; the kit does not own that file |
 | Script runs but prints nothing | Many modules only define functions — ask Cursor to call an entrypoint or add a `__main__` block |
