@@ -14,8 +14,13 @@
 # From your-project/:  ./cursory/install.sh
 #                  or: ./cursory.sh
 #
-# Non-interactive: CURSORY_YES=1 ./cursory/install.sh
-# Override target:  CURSORY_TARGET=/path/to/repo ./install.sh
+# Non-interactive (preferred for Cursor natural-language installs):
+#   CURSORY_YES=1 ./cursory/install.sh
+# Override target:
+#   CURSORY_TARGET=/path/to/repo ./install.sh
+#
+# In Cursor you can ask: "Install cursory non-interactively"
+# → the agent should run CURSORY_YES=1 ./cursory/install.sh
 set -euo pipefail
 
 CURSORY_DIR="$(cd "$(dirname "$0")" && pwd)"
