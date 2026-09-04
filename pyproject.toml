@@ -1,7 +1,7 @@
 [project]
 name = "prototype"
 version = "0.1.0"
-description = "Python prototype template for Cursor Agent and GitHub Codespaces"
+description = "Minimal Python prototype for Cursor Cloud Agents"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = []

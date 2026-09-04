@@ -1,5 +1,5 @@
 ---
-description: Python testing conventions for this prototype template
+description: Python testing conventions for this Cursor prototype
 globs:
   - "**/*.py"
   - "tests/**"
@@ -14,4 +14,3 @@ alwaysApply: false
 - Run tests before committing: `./scripts/run-python.sh --test`
 - Tests live in `tests/`; source code in `src/` (`pythonpath = src` in `pyproject.toml`).
 - Use `pytest` style tests; keep tests focused on real behavior.
-- Do not add JavaScript, web servers, or forwarded ports.

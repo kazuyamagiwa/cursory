@@ -1,10 +1,8 @@
-node_modules/
-dist/
 .venv/
-.devcontainer/logs/
-.devcontainer/.setup-complete
-*.log
+.uv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
-.uv/
+*.log
+dist/
+node_modules/

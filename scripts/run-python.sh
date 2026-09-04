@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# Agent entrypoint for Python — always use this instead of bare python3.
+# Cursor Cloud Agent entrypoint for Python — use this instead of bare python3.
 #
 # Usage:
 #   ./scripts/run-python.sh script.py [args...]
-#   ./scripts/run-python.sh script.py -- --flag value
 #   ./scripts/run-python.sh -m pytest tests/ -v
 #   ./scripts/run-python.sh --test
 #   ./scripts/run-python.sh --sync
@@ -12,47 +11,55 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+export PATH="${HOME}/.local/bin:${PATH}"
 
-UV="${UV:-$HOME/.local/bin/uv}"
-
-bash "$ROOT/scripts/setup-python.sh" >/dev/null
-
-run_uv() {
-  "$UV" run "$@"
+ensure_uv() {
+  if command -v uv >/dev/null 2>&1; then
+    return
+  fi
+  echo "Installing uv..."
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="${HOME}/.local/bin:${PATH}"
 }
+
+sync_env() {
+  ensure_uv
+  uv python install
+  uv sync --all-extras
+}
+
+# Quiet bootstrap on every invoke (idempotent)
+ensure_uv
+uv python install >/dev/null
+uv sync --all-extras >/dev/null
+
+UV="$(command -v uv)"
 
 case "${1:-}" in
   --sync)
-    bash "$ROOT/scripts/setup-python.sh"
+    sync_env
     ;;
   --test)
-    run_uv pytest "${@:2}"
+    "$UV" run pytest "${@:2}"
     ;;
   --repl)
-    run_uv python "${@:2}"
+    "$UV" run python "${@:2}"
     ;;
   --help|-h)
     sed -n '2,10p' "$0" | sed 's/^# \?//'
     ;;
   --)
     shift
-    run_uv python "$@"
+    "$UV" run python "$@"
     ;;
   -m)
-    run_uv "$@"
+    "$UV" run "$@"
     ;;
   "")
     echo "Usage: $0 <script.py> [args...] | --test | --sync | --repl | -m <module> [args...]"
     exit 1
     ;;
   *)
-    if [[ "$1" == *.py && -f "$1" ]]; then
-      run_uv python "$@"
-    elif [[ -f "$1" ]]; then
-      run_uv python "$@"
-    else
-      # Allow: ./scripts/run-python.sh -c "print(1)" via further args
-      run_uv python "$@"
-    fi
+    "$UV" run python "$@"
     ;;
 esac
