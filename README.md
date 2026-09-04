@@ -10,23 +10,26 @@
 
 Minimal install kit that makes an existing Python project **Cursor Cloud Agent–ready**.
 
-You drop this repo into your project as `cursory/`, run a short installer, and get just enough wiring for the agent to run scripts, sync deps, and run tests — without replacing your `pyproject.toml` or copying a whole second environment stack.
+You drop this repo into your project as `cursory/`, then install — in a terminal
+**or by asking Cursor**. The preferred Cursor flow is: agent shows a **plan**,
+**asks you in chat** what to install, then **applies** your choices with no bash
+`read` prompts — without replacing your `pyproject.toml`.
 
 ## Contents
 
 - [Why this exists](#why-this-exists)
-- [Ask Cursor to run the installer](#ask-cursor-to-run-the-installer)
+- [Ask Cursor to run the installer (chat Q&A)](#ask-cursor-to-run-the-installer-chat-qa)
 - [Ask Cursor to run Python](#ask-cursor-to-run-python)
 - [What you get](#what-you-get)
 - [Prerequisites](#prerequisites)
 - [Install](#install)
+- [Installer CLI](#installer-cli)
 - [What the installer does](#what-the-installer-does)
 - [Templates → destinations](#templates--destinations)
 - [Rules](#rules)
 - [Day-to-day commands](#day-to-day-commands)
 - [Adding dependencies](#adding-dependencies)
 - [Secrets](#secrets)
-- [Non-interactive install](#non-interactive-install)
 - [Cleanup behavior](#cleanup-behavior)
 - [Layout after install](#layout-after-install)
 - [Troubleshooting](#troubleshooting)
@@ -42,43 +45,58 @@ Most “agent templates” either:
 
 1. Your project already exists (especially its `pyproject.toml`).
 2. You copy **only this kit** under `cursory/`.
-3. An installer **asks** what is missing and copies **only** those essentials.
+3. An installer (or Cursor) **asks** what is missing and copies **only** those essentials.
 4. Template filenames start with `_` so they are never confused with live project files.
 
-## Ask Cursor to run the installer
+## Ask Cursor to run the installer (chat Q&A)
 
-Yes — in the Cursor app you can install this kit with **natural language**. You do not have to run `install.sh` yourself in a terminal.
+Yes — in the Cursor app you can install with **natural language**. The agent should
+**not** drive bash `read` prompts. Instead it runs a **plan → chat Q&A → apply** loop.
 
-After this repo lives at `your-project/cursory/`, open the project in Cursor and ask something like:
+After this repo lives at `your-project/cursory/`, ask something like:
 
-> Run the cursory installer non-interactively.
+> Set up cursory for this project.
 
-> Install cursory into this project.
+> Run the cursory installer and ask me what to copy.
 
-> Run `./cursory/install.sh` with defaults (no prompts).
+### What the agent should do
 
-### Prefer non-interactive when asking Cursor
+1. **Plan** — show what exists vs what can be offered:
+   ```bash
+   ./cursory/install.sh --plan
+   ```
+2. **Ask you in Cursor chat** which components to install, for example:
+   - create `./cursory.sh`? (`launcher`)
+   - copy `AGENTS.md`? (`agents`)
+   - copy `scripts/run-python.sh`? (`run-python`)
+   - copy `.python-version`? (`python-version`)
+   - copy Cursor rules? (`cursor-rules`)
+   - clean underscore templates from `cursory/`? (`cleanup`)
+3. **Apply** your answers (no interactive shell):
+   ```bash
+   ./cursory/install.sh --apply --with launcher,agents,run-python,cursor-rules --cleanup
+   ```
+   Or everything still missing:
+   ```bash
+   ./cursory/install.sh --apply --all
+   ```
+   Preview first:
+   ```bash
+   ./cursory/install.sh --apply --all --dry-run
+   ```
 
-`install.sh` uses interactive `read` prompts. Agents handle those poorly. For Cursor, use the non-interactive path:
-
-```bash
-CURSORY_YES=1 ./cursory/install.sh
-```
-
-That accepts defaults: create `./cursory.sh` if missing, copy every missing template, skip anything that already exists, and clean underscore templates from `cursory/`.
-
-| You say in Cursor | What the agent should run |
-|-------------------|---------------------------|
-| “Install cursory” / “Run the cursory installer” | `CURSORY_YES=1 ./cursory/install.sh` |
-| “Re-run cursory setup” | `CURSORY_YES=1 ./cursory.sh` or `CURSORY_YES=1 ./cursory/install.sh` |
+| You say in Cursor | What the agent should do |
+|-------------------|--------------------------|
+| “Set up cursory / install cursory (ask me)” | `--plan`, ask in chat, then `--apply --with …` |
+| “Install everything missing” | `--apply --all` (includes cleanup) or `CURSORY_YES=1 ./cursory/install.sh` |
+| “Install cursory but skip python-version” | `--apply --all --without python-version` |
+| “Show what cursory would do” | `--plan` or `--apply --all --dry-run` |
 
 Still true under Cursor:
 
 - Destinations that already exist are **not** overwritten
 - `pyproject.toml` is **never** created or overwritten
 - The kit folder must be named `cursory` (or set `CURSORY_TARGET`)
-
-You can also run `./cursory/install.sh` yourself in a terminal if you want to answer each prompt manually.
 
 ## Ask Cursor to run Python
 
@@ -165,38 +183,53 @@ git clone https://github.com/kazuyamagiwa/cursory.git cursory
 
 Or copy the folder in and name it exactly `cursory`.
 
-### 2. Run the installer from the repo root
+### 2. Run the installer
 
-**Option A — ask Cursor (recommended):**
+**Option A — ask Cursor with chat Q&A (recommended):**
 
-> Install cursory non-interactively.
+> Set up cursory and ask me what to install.
 
-→ `CURSORY_YES=1 ./cursory/install.sh`  
-See [Ask Cursor to run the installer](#ask-cursor-to-run-the-installer).
+→ `--plan` → questions in chat → `--apply --with …`  
+See [Ask Cursor to run the installer (chat Q&A)](#ask-cursor-to-run-the-installer-chat-qa).
 
-**Option B — terminal, interactive Q&A:**
+**Option B — install everything missing (no questions):**
+
+```bash
+./cursory/install.sh --apply --all
+# same as:
+CURSORY_YES=1 ./cursory/install.sh
+```
+
+**Option C — terminal interactive Q&A** (real TTY only; not for agents):
 
 ```bash
 ./cursory/install.sh
 ```
 
-**Option C — terminal, same defaults as Cursor:**
-
-```bash
-CURSORY_YES=1 ./cursory/install.sh
-```
-
 The kit directory **must** be named `cursory` (unless you set `CURSORY_TARGET`).
 
-### 3. What happens during install
+## Installer CLI
 
-The installer:
+```bash
+./cursory/install.sh --help
+./cursory/install.sh --scan          # report what exists / is missing
+./cursory/install.sh --plan          # scan + offer list for chat Q&A
+./cursory/install.sh --apply --all   # install every missing component + cleanup
+./cursory/install.sh --apply --all --dry-run
+./cursory/install.sh --apply --with launcher,agents,run-python --cleanup
+./cursory/install.sh --apply --all --without python-version
+```
 
-1. Scans your repo (what exists / what is missing)
-2. Offers to create `./cursory.sh` at the root
-3. Asks (or auto-accepts with `CURSORY_YES=1`), for each missing template, whether to copy it
-4. Skips any destination that already exists (no overwrite)
-5. Optionally cleans leftover template files inside `cursory/`
+| Component id | Effect |
+|--------------|--------|
+| `launcher` | Create `./cursory.sh` |
+| `agents` | `_AGENTS.md` → `AGENTS.md` |
+| `run-python` | `_run-python.sh` → `scripts/run-python.sh` |
+| `python-version` | `_python-version` → `.python-version` |
+| `cursor-rules` | `_python-testing.mdc` → `.cursor/rules/python-testing.mdc` |
+| `cleanup` | Remove underscore templates (and safe leftovers) from `cursory/` |
+
+`CURSORY_YES=1` with no args is an alias for `--apply --all --cleanup`.
 
 ## What the installer does
 
@@ -206,10 +239,9 @@ cursory/        ← KIT (this repo)
 ```
 
 1. **Resolve target** — parent of `cursory/` (or `CURSORY_TARGET`)
-2. **Scan** — reports `pyproject.toml`, `AGENTS.md`, `scripts/run-python.sh`, `.python-version`, `.cursor/rules/`, `src/`, `tests/`, `.git/`
-3. **Root shell** — optional `cursory.sh` that execs `cursory/install.sh`
-4. **Q&A copy** — only selected `_` templates, underscore removed at destination
-5. **Cleanup** — remove used `_` templates from the kit; other kit files only if the **same name already exists** at the repo root
+2. **Scan / plan** — report what exists; list components you can still install
+3. **Apply** — create launcher and/or copy selected `_` templates (underscore removed)
+4. **Cleanup** (optional) — remove used `_` templates from the kit; other kit files only if the **same name already exists** at the repo root
 
 ## Templates → destinations
 
@@ -229,6 +261,7 @@ If the destination already exists, that file is **left untouched**.
 - **Never** overwrite existing destinations
 - **Never** create or overwrite `pyproject.toml` (project-owned)
 - Templates in this kit **must** be named with a leading `_`
+- Agents: use `--plan` + chat Q&A + `--apply` (not interactive `read`)
 - Agents and humans should run Python via `./scripts/run-python.sh`, not bare `python3`
 - Do not commit API keys; use Cursor environment secrets
 
@@ -271,36 +304,22 @@ Never commit real API keys.
 - Read them in code with `os.environ["YOUR_KEY_NAME"]`.
 - The **name** may appear in docs/code; the **value** must not appear in git.
 
-## Non-interactive install
-
-Use this for **Cursor natural-language installs**, CI, and scripted setup. It accepts defaults: copy missing files, create launcher, clean kit:
-
-```bash
-CURSORY_YES=1 ./cursory/install.sh
-```
-
-Override target directory if needed:
-
-```bash
-CURSORY_TARGET=/path/to/your-repo CURSORY_YES=1 /path/to/cursory/install.sh
-```
-
 ## Cleanup behavior
 
-After the copy pass, the installer can delete unnecessary files **inside `cursory/`**:
+After apply, optional `cleanup` deletes unnecessary files **inside `cursory/`**:
 
 | Kind | Behavior |
 |------|----------|
-| Underscore templates (`_AGENTS.md`, …) | Removed after the Q&A/copy pass |
+| Underscore templates (`_AGENTS.md`, …) | Removed when cleanup runs **and** the destination already exists at repo root; unselected templates are kept for later |
 | Other kit leftovers (`README.md`, old `src/`, …) | Removed **only if** the same name already exists at the repo root |
 | `install.sh` | Always kept so you can re-run |
 
 Re-run anytime:
 
 ```bash
-./cursory.sh
+./cursory.sh --plan
 # or
-./cursory/install.sh
+./cursory/install.sh --plan
 ```
 
 Existing project files are still never overwritten.
@@ -322,7 +341,7 @@ your-project/
   cursory/
     install.sh                   ← kept
     README.md                    ← kept if not also at repo root
-    …                            ← underscore templates removed
+    …                            ← underscore templates removed if cleanup ran
   src/ …                         ← yours
   tests/ …                       ← yours
 ```
@@ -332,11 +351,12 @@ your-project/
 | Problem | What to do |
 |---------|------------|
 | `This kit must live at <your-repo>/cursory/` | Rename the folder to `cursory`, or set `CURSORY_TARGET` |
-| Cursor hangs or fails on installer prompts | Ask for a **non-interactive** install: `CURSORY_YES=1 ./cursory/install.sh` |
+| Agent tries interactive `read` prompts | Tell it to use `--plan` then `--apply`; or `--apply --all` |
+| `Interactive prompts require a TTY` | Expected for agents — use `--apply` flags instead of bare `./install.sh` |
 | Agent uses system `python3` | Ensure `AGENTS.md` was installed; ask it to follow `AGENTS.md` / use `./scripts/run-python.sh` |
 | `uv sync` fails | Fix **your** `pyproject.toml` / build backend; the kit does not own that file |
 | Script runs but prints nothing | Many modules only define functions — ask Cursor to call an entrypoint or add a `__main__` block |
-| Want a file the installer skipped | Copy the `_` template manually if you need a different path; the installer will not overwrite |
+| Want a file the installer skipped | Re-run with `--apply --with <id>`; still will not overwrite existing destinies |
 | First run is slow | Normal: `uv` and CPython may download once, then be cached |
 
 ## License
