@@ -4,19 +4,21 @@ This project is set up for **Cursor Cloud Agents**.
 
 ## Running the cursory installer
 
-If this repo is nested as `cursory/` under a user project and essentials are
-not installed yet, run the installer **non-interactively** (do not use bare
-interactive prompts — `read` does not work well for agents):
+If `cursory/` is present and essentials are missing, **conduct Q&A in Cursor
+chat** (not bash `read`):
+
+1. `./cursory/install.sh --plan`
+2. Ask the user which components to install
+3. `./cursory/install.sh --apply --with … --cleanup` or `--apply --all`
 
 ```bash
-CURSORY_YES=1 ./cursory/install.sh
+./cursory/install.sh --plan
+./cursory/install.sh --apply --with launcher,agents,run-python,cursor-rules --cleanup
+./cursory/install.sh --apply --all
+./cursory/install.sh --apply --all --dry-run
 ```
 
-Or from the repo root after the first install created the launcher:
-
-```bash
-CURSORY_YES=1 ./cursory.sh
-```
+`CURSORY_YES=1 ./cursory/install.sh` = `--apply --all --cleanup` (no questions).
 
 Never overwrite `pyproject.toml` or other existing destinations.
 
@@ -50,5 +52,5 @@ To add a package: edit `pyproject.toml`, then `./scripts/run-python.sh --sync`.
 - Use system `python3` directly
 - Create ad-hoc venvs — use the script
 - Overwrite an existing `pyproject.toml`
-- Run `./cursory/install.sh` interactively when acting as an agent — use `CURSORY_YES=1`
+- Run interactive `./cursory/install.sh` (use `--plan` / `--apply` or chat Q&A)
 - Commit API keys — use Cursor environment secrets
