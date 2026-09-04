@@ -1,6 +1,6 @@
 # Agent instructions (Cursor Cloud Agent)
 
-This repo is for **Cursor Cloud Agents** only.
+This project is set up for **Cursor Cloud Agents**.
 
 ## Running Python
 
@@ -14,14 +14,15 @@ Always use the wrapper. Do **not** call `python`, `python3`, or `pip` directly.
 ./scripts/run-python.sh --sync
 ```
 
-The script installs `uv` if needed, pins Python from `.python-version`, creates `.venv`, and syncs deps from `pyproject.toml`.
+The script installs `uv` if needed, creates `.venv`, and syncs deps from the
+project's existing `pyproject.toml`. **Never overwrite `pyproject.toml`.**
 
 ## Source of truth
 
 | File | Purpose |
 |------|---------|
-| `.python-version` | Exact Python version (3.12) |
-| `pyproject.toml` | Dependencies and project metadata |
+| `pyproject.toml` | Project-owned deps and metadata (do not overwrite) |
+| `.python-version` | Python version pin when present |
 | `scripts/run-python.sh` | How to run Python / tests / sync |
 
 To add a package: edit `pyproject.toml`, then `./scripts/run-python.sh --sync`.
@@ -30,4 +31,5 @@ To add a package: edit `pyproject.toml`, then `./scripts/run-python.sh --sync`.
 
 - Use system `python3` directly
 - Create ad-hoc venvs — use the script
+- Overwrite an existing `pyproject.toml`
 - Commit API keys — use Cursor environment secrets

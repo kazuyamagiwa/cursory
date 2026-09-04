@@ -1,5 +1,5 @@
 ---
-description: Python testing conventions for this Cursor prototype
+description: Python testing conventions for Cursor Cloud Agents
 globs:
   - "**/*.py"
   - "tests/**"
@@ -9,8 +9,8 @@ alwaysApply: false
 
 # Python testing rules
 
-- Python version is **3.12 only**, managed by `uv`.
+- Prefer the project's pinned Python via `uv` and `./scripts/run-python.sh`.
 - Always run Python and tests via `./scripts/run-python.sh`, never bare `python3` or `pytest`.
 - Run tests before committing: `./scripts/run-python.sh --test`
-- Tests live in `tests/`; source code in `src/` (`pythonpath = src` in `pyproject.toml`).
+- Never overwrite `pyproject.toml`; edit it in place, then `--sync`.
 - Use `pytest` style tests; keep tests focused on real behavior.

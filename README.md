@@ -1,37 +1,57 @@
 # cursory
 
-Minimal **Python 3.12** starter for [Cursor Cloud Agents](https://cursor.com/docs).
+Drop this kit into a user project as `cursory/`, then run the installer at the
+**repo root**. It scans the project, asks a few questions, and copies only the
+essential Cursor files (never overwriting `pyproject.toml` or other existing files).
 
-Clone or copy this into a new repo, then ask the agent to run or edit code.
+## Use in your project
 
-## Layout
-
+```text
+your-project/                 ← you already have this (with pyproject.toml)
+  pyproject.toml
+  cursory/                    ← copy of this repo
+    install.sh
+    _AGENTS.md                ← templates always start with _
+    _run-python.sh
+    _python-version
+    _python-testing.mdc
 ```
-AGENTS.md                 # agent contract
-scripts/run-python.sh     # only way to run Python
-pyproject.toml            # deps (uv)
-.python-version           # 3.12
-src/                      # application code
-tests/                    # pytest
-.cursor/rules/            # Cursor IDE rules
-```
 
-## Commands
+From `your-project/`:
 
 ```bash
-./scripts/run-python.sh src/hello.py   # run a script
-./scripts/run-python.sh --test         # pytest
-./scripts/run-python.sh --sync         # after editing pyproject.toml
+./cursory/install.sh
 ```
 
-## Secrets
+That creates an optional root launcher `./cursory.sh` and copies selected
+templates out of `cursory/` (underscore removed):
 
-Never commit API keys. Store them as **Cursor environment secrets**; read them via `os.environ["…"]`.
+| Template | Destination |
+|----------|-------------|
+| `_AGENTS.md` | `AGENTS.md` |
+| `_run-python.sh` | `scripts/run-python.sh` |
+| `_python-version` | `.python-version` |
+| `_python-testing.mdc` | `.cursor/rules/python-testing.mdc` |
 
-## New dependency
+Afterward it cleans unnecessary files **inside `cursory/`**. Non-template
+leftovers are removed only when the **same name already exists** at the repo
+root (so a copy remains). Underscore templates are removed after the copy pass.
 
-Edit `pyproject.toml`, then:
+## Rules
+
+- **Never** overwrite existing destinations
+- **Never** create or overwrite `pyproject.toml` (project-owned)
+- Templates in this kit **must** be named with a leading `_`
+
+## Non-interactive
 
 ```bash
-./scripts/run-python.sh --sync
+CURSORY_YES=1 ./cursory/install.sh
+```
+
+## After install
+
+```bash
+./scripts/run-python.sh --test
+./scripts/run-python.sh path/to/script.py
 ```
