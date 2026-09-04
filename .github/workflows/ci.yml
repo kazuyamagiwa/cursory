@@ -7,21 +7,42 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  install-kit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
         with:
-          enable-cache: true
+          path: cursory
 
-      - name: Set up Python 3.12
-        run: uv python install 3.12
+      - name: Create mock user repo
+        run: |
+          mkdir -p user-repo
+          printf '%s\n' \
+            '[project]' \
+            'name = "user-app"' \
+            'version = "0.0.1"' \
+            'requires-python = ">=3.12"' \
+            'dependencies = []' \
+            '' \
+            '[build-system]' \
+            'requires = ["hatchling"]' \
+            'build-backend = "hatchling.build"' \
+            > user-repo/pyproject.toml
+          mv cursory user-repo/cursory
 
-      - name: Install dependencies
-        run: uv sync --all-extras
+      - name: Run installer (non-interactive)
+        working-directory: user-repo
+        run: CURSORY_YES=1 ./cursory/install.sh
 
-      - name: Run tests
-        run: uv run pytest
+      - name: Assert essentials copied, not overwritten pyproject
+        working-directory: user-repo
+        run: |
+          test -f cursory.sh
+          test -f AGENTS.md
+          test -x scripts/run-python.sh
+          test -f .python-version
+          test -f .cursor/rules/python-testing.mdc
+          grep -q 'name = "user-app"' pyproject.toml
+          # underscore templates should be cleaned from kit
+          test ! -f cursory/_AGENTS.md
+          test ! -f cursory/_run-python.sh
