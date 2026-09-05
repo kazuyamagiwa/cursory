@@ -1,26 +1,28 @@
 # Agent instructions (Cursor Cloud Agent)
 
-This project is set up for **Cursor Cloud Agents**.
+This project is set up for **Cursor Cloud Agents** — including asking Cursor
+from your phone to test-run Python in this repo.
 
 ## Running the cursory installer
 
-If `cursory/` is present and essentials are missing, **conduct Q&A in Cursor
-chat** (not bash `read`):
+If `.cursory/` is present (preferred) and essentials are missing, **conduct Q&A
+in Cursor chat** (not bash `read`):
 
-1. `./cursory/install.sh --plan`
+1. `./.cursory/install.sh --plan`
 2. Ask the user which components to install
-3. `./cursory/install.sh --apply --with … --cleanup` or `--apply --all`
+3. `./.cursory/install.sh --apply --with … --cleanup` or `--apply --all`
 
 ```bash
-./cursory/install.sh --plan
-./cursory/install.sh --apply --with launcher,agents,run-python,cursor-rules --cleanup
-./cursory/install.sh --apply --all
-./cursory/install.sh --apply --all --dry-run
+./.cursory/install.sh --plan
+./.cursory/install.sh --apply --with launcher,agents,run-python,cursor-rules --cleanup
+./.cursory/install.sh --apply --all
+./.cursory/install.sh --apply --all --dry-run
 ```
 
-`CURSORY_YES=1 ./cursory/install.sh` = `--apply --all --cleanup` (no questions).
+`CURSORY_YES=1 ./.cursory/install.sh` = `--apply --all --cleanup` (no questions).
 
 Never overwrite `pyproject.toml` or other existing destinations.
+Do **not** gitignore `.cursory/`.
 
 ## Running Python
 
@@ -52,5 +54,6 @@ To add a package: edit `pyproject.toml`, then `./scripts/run-python.sh --sync`.
 - Use system `python3` directly
 - Create ad-hoc venvs — use the script
 - Overwrite an existing `pyproject.toml`
-- Run interactive `./cursory/install.sh` (use `--plan` / `--apply` or chat Q&A)
+- Run interactive `./.cursory/install.sh` (use `--plan` / `--apply` or chat Q&A)
+- Add `.cursory/` to `.gitignore`
 - Commit API keys — use Cursor environment secrets

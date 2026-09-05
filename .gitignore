@@ -1,3 +1,6 @@
+# Local / generated — never ignore the .cursory kit itself.
+# User projects that embed this kit should also NOT gitignore .cursory/
+
 .venv/
 .uv/
 __pycache__/

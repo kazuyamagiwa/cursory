@@ -12,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: cursory
+          path: kit
 
-      - name: Create mock user repo
+      - name: Create mock user repo with .cursory/
         run: |
           mkdir -p user-repo
           printf '%s\n' \
@@ -28,19 +28,19 @@ jobs:
             'requires = ["hatchling"]' \
             'build-backend = "hatchling.build"' \
             > user-repo/pyproject.toml
-          mv cursory user-repo/cursory
+          mv kit user-repo/.cursory
 
       - name: Plan mode
         working-directory: user-repo
-        run: ./cursory/install.sh --plan
+        run: ./.cursory/install.sh --plan
 
       - name: Dry-run apply
         working-directory: user-repo
-        run: ./cursory/install.sh --apply --all --dry-run
+        run: ./.cursory/install.sh --apply --all --dry-run
 
       - name: Apply all
         working-directory: user-repo
-        run: ./cursory/install.sh --apply --all
+        run: ./.cursory/install.sh --apply --all
 
       - name: Assert essentials copied, not overwritten pyproject
         working-directory: user-repo
@@ -51,13 +51,15 @@ jobs:
           test -f .python-version
           test -f .cursor/rules/python-testing.mdc
           grep -q 'name = "user-app"' pyproject.toml
-          test ! -f cursory/_AGENTS.md
-          test ! -f cursory/_run-python.sh
+          test ! -f .cursory/_AGENTS.md
+          test ! -f .cursory/_run-python.sh
+          # launcher points at .cursory
+          grep -q '.cursory/install.sh' cursory.sh
 
       - name: Second apply does not overwrite
         working-directory: user-repo
         run: |
           echo 'USER AGENTS' > AGENTS.md
-          printf '%s\n' '# template' > cursory/_AGENTS.md
-          ./cursory/install.sh --apply --with agents
+          printf '%s\n' '# template' > .cursory/_AGENTS.md
+          ./.cursory/install.sh --apply --with agents
           grep -q 'USER AGENTS' AGENTS.md
