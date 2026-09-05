@@ -4,23 +4,23 @@
 # Expected layout:
 #   your-project/           ← TARGET (user repo root)
 #     pyproject.toml        ← already exists; never overwritten
-#     cursory/              ← this kit
+#     .cursory/             ← this kit
 #       install.sh
 #       _AGENTS.md
 #       ...
 #
 # Cursor agent workflow (preferred — Q&A in chat, not bash read):
-#   1. ./cursory/install.sh --plan
+#   1. ./.cursory/install.sh --plan
 #   2. Ask the user in Cursor chat which components to install
-#   3. ./cursory/install.sh --apply --with launcher,agents,run-python --cleanup
-#      or everything missing: ./cursory/install.sh --apply --all
+#   3. ./.cursory/install.sh --apply --with launcher,agents,run-python --cleanup
+#      or everything missing: ./.cursory/install.sh --apply --all
 #
 # Other modes:
-#   ./cursory/install.sh --scan
-#   ./cursory/install.sh --apply --all --dry-run
-#   ./cursory/install.sh --apply --all --without python-version
-#   CURSORY_YES=1 ./cursory/install.sh     # alias for --apply --all --cleanup
-#   ./cursory/install.sh                   # interactive (humans in a real TTY only)
+#   ./.cursory/install.sh --scan
+#   ./.cursory/install.sh --apply --all --dry-run
+#   ./.cursory/install.sh --apply --all --without python-version
+#   CURSORY_YES=1 ./.cursory/install.sh     # alias for --apply --all --cleanup
+#   ./.cursory/install.sh                   # interactive (humans in a real TTY only)
 #
 # Override target: CURSORY_TARGET=/path/to/repo ./install.sh ...
 set -euo pipefail
@@ -55,13 +55,13 @@ Components (--with / --without):
   run-python      _run-python.sh → scripts/run-python.sh
   python-version  _python-version → .python-version
   cursor-rules    _python-testing.mdc → .cursor/rules/python-testing.mdc
-  cleanup         Remove underscore templates (and safe leftovers) from cursory/
+  cleanup         Remove underscore templates (and safe leftovers) from .cursory/
 
 Examples:
-  ./cursory/install.sh --plan
-  ./cursory/install.sh --apply --all
-  ./cursory/install.sh --apply --with launcher,agents,run-python --cleanup
-  ./cursory/install.sh --apply --all --without python-version --dry-run
+  ./.cursory/install.sh --plan
+  ./.cursory/install.sh --apply --all
+  ./.cursory/install.sh --apply --with launcher,agents,run-python --cleanup
+  ./.cursory/install.sh --apply --all --without python-version --dry-run
 EOF
 }
 
@@ -74,14 +74,24 @@ resolve_target() {
     return
   fi
 
-  if [[ "$(basename "$CURSORY_DIR")" == "cursory" ]]; then
+  local base
+  base="$(basename "$CURSORY_DIR")"
+
+  if [[ "$base" == ".cursory" ]]; then
     TARGET="$parent"
     return
   fi
 
-  echo "This kit must live at <your-repo>/cursory/"
-  echo "Current kit directory name: $(basename "$CURSORY_DIR")"
-  echo "Move/rename it to cursory/, or set CURSORY_TARGET=/path/to/your-repo"
+  # Legacy folder name — still works, but prefer .cursory
+  if [[ "$base" == "cursory" ]]; then
+    echo "Note: kit folder is 'cursory/'. Prefer renaming to '.cursory/'." >&2
+    TARGET="$parent"
+    return
+  fi
+
+  echo "This kit must live at <your-repo>/.cursory/"
+  echo "Current kit directory name: $base"
+  echo "Move/rename it to .cursory/, or set CURSORY_TARGET=/path/to/your-repo"
   exit 1
 }
 
@@ -317,12 +327,12 @@ print_plan() {
     esac
   done
 
-  echo "  [offer]    cleanup           remove underscore templates from cursory/ after copy"
+  echo "  [offer]    cleanup           remove underscore templates from .cursory/ after copy"
   echo ""
   echo "Example after the user answers in chat:"
-  echo "  ./cursory/install.sh --apply --with launcher,agents,run-python,cursor-rules --cleanup"
-  echo "  ./cursory/install.sh --apply --all --without python-version"
-  echo "  ./cursory/install.sh --apply --all"
+  echo "  ./.cursory/install.sh --apply --with launcher,agents,run-python,cursor-rules --cleanup"
+  echo "  ./.cursory/install.sh --apply --all --without python-version"
+  echo "  ./.cursory/install.sh --apply --all"
 }
 
 write_root_shell() {
@@ -337,10 +347,10 @@ write_root_shell() {
   fi
   cat >"$dest" <<'EOF'
 #!/usr/bin/env bash
-# Launcher at user repo root → cursory/install.sh
+# Launcher at user repo root → .cursory/install.sh
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-exec "$ROOT/cursory/install.sh" "$@"
+exec "$ROOT/.cursory/install.sh" "$@"
 EOF
   chmod +x "$dest"
   echo "  created  ./cursory.sh"
@@ -514,7 +524,7 @@ run_interactive() {
     fi
   done
 
-  ask_yn "Delete unnecessary files from cursory/ now?" y
+  ask_yn "Delete unnecessary files from .cursory/ now?" y
   if [[ "$REPLY" == "y" ]]; then
     selected="${selected:+$selected,}cleanup"
   fi
@@ -551,14 +561,14 @@ main() {
       apply_selected
       echo ""
       echo "Done."
-      echo "  Re-run via: ./cursory.sh  or  ./cursory/install.sh --plan"
+      echo "  Re-run via: ./cursory.sh  or  ./.cursory/install.sh --plan"
       ;;
     interactive)
       print_scan
       run_interactive
       echo ""
       echo "Done."
-      echo "  Re-run via: ./cursory.sh  or  ./cursory/install.sh --plan"
+      echo "  Re-run via: ./cursory.sh  or  ./.cursory/install.sh --plan"
       ;;
   esac
 }
